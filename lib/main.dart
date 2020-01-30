@@ -16,8 +16,9 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final String tableName = "users";
 
-  _recovyBD() async {
+  _recoveryBD() async {
 
     final pathBD = await getDatabasesPath();
     final localBD = join(pathBD, "dataBase2.db");
@@ -35,27 +36,89 @@ class _HomeState extends State<Home> {
 
   }
 
-  _save(String name, int age ) async {
+  _insert(String name, int age ) async {
 
     Map<String, dynamic> userData = {
       "nome": name,
       "age": age
     };
-    Database bd = await _recovyBD();
+    Database bd = await _recoveryBD();
     int id = await bd.insert("users", userData);
     print ("asalvo: "+id.toString());
     return id;
   }
-  /*_select() async{
-    String sql = "select * from users;";
-    Database bd = await _recovyBD();
-    bd.query(table)
-  }*/
+  _listUserByName(String name) async{
+    String sql = "select * from "+tableName+" WHERE nome like '"+name+"';";
+    Database bd = await _recoveryBD();
+
+    List users = await bd.rawQuery(sql);
+    for (var user in users){
+      print(
+          "Id:"+ user['id'].toString()+
+              "\nName: "+ user['nome']+
+              "\nAge: "+ user['age'].toString()+
+              "\n===========================\n"
+      );
+    }
+
+    return users;
+  }
+
+  _listUserById(int id) async{
+    String sql = "select * from "+tableName+" WHERE id = $id;";
+    Database bd = await _recoveryBD();
+
+    List users = await bd.rawQuery(sql);
+    for (var user in users){
+      print(
+          "Id:"+ user['id'].toString()+
+              "\nName: "+ user['nome']+
+              "\nAge: "+ user['age'].toString()+
+              "\n===========================\n"
+      );
+    }
+
+    return users;
+  }
+
+  _listAllUsers() async{
+    String sql = "select * from "+tableName+";";
+    Database bd = await _recoveryBD();
+
+    List users = await bd.rawQuery(sql);
+    for (var user in users){
+      print(
+        "\nId:"+ user['id'].toString()+
+          "\nName: "+ user['nome']+
+          "\nAge: "+ user['age'].toString()
+      );
+    }
+
+    return users;
+  }
+  _updateNameById(int id, String newName) async{
+    String sql = "UPDATE "+tableName+" SET nome= ? WHERE id = ? ;";
+    Database bd = await _recoveryBD();
+    return bd.rawUpdate(sql, [newName,id]);
+  }
+
+  _deleteById(int id) async{
+    String sql = "DELETE FROM "+tableName+"  WHERE id = ? ;";
+    Database bd = await _recoveryBD();
+    return bd.rawDelete(sql, [id]);
+
+  }
+
   @override
   Widget build(BuildContext context) {
 
-    _recovyBD();
-    _save("Murilo",18);
+    _recoveryBD();
+    _insert("Nome",18);
+    _listUserByName("Nome");
+    _updateNameById(14, "New Name").toString();
+    _listUserByName("New Name");
+    _deleteById(14).toString().toString();
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Simple Crud"),
